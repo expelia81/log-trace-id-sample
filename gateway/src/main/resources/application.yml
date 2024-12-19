@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: gateway
+  cloud:
+    gateway:
+      default-filters:
+        - name: TraceIdInserter
+          args:
+            algorithm: UUID
+            key: ${logging.trace.key:X-TRACE-ID}
+      routes:
+        - id: apiserver
+          uri: http://localhost:12001
+          predicates:
+            - Path=/**
+          filters:
+#            - AddRequestHeader=x-trace-id, ${spring.application.name}
+
+
+
+server:
+  port: 12000
+

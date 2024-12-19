@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: log-trace-id-sample
+  profiles:
+    active: local
+server:
+  port: 12002
+logging:
+  config: classpath:log4j2/log4j2-${spring.profiles.active}.xml
+#  trace:
+#    key: x-trace-id
+#    default-name: LOG_TRACE_ID_NOT_FOUND
+

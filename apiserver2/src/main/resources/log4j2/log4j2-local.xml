@@ -1,0 +1,17 @@
+<Configuration>
+    <Properties>
+        <Property name="TRACE_KEY">${spring:logging.trace.key:-X-TRACE-ID}</Property>
+        <Property name="TRACE_KEY_NOT_FOUND">${spring:logging.trace.default-name:-SYSTEM}</Property>
+    </Properties>
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+<!--            <PatternLayout pattern="%d{yy-MM-dd HH:mm:ss.SSS} [%thread] [%X{traceId}] %-5level %logger{36} - %msg%n"/>-->
+            <PatternLayout pattern="%d{yy-MM-dd HH:mm:ss.SSS} [%thread] [$${ctx:${TRACE_KEY}:-${TRACE_KEY_NOT_FOUND}}] %-5level %logger{36} - %msg%n"/>
+        </Console>
+    </Appenders>
+    <Loggers>
+        <Root level="info">
+            <AppenderRef ref="Console"/>
+        </Root>
+    </Loggers>
+</Configuration>
