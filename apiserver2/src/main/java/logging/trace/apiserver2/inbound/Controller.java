@@ -15,7 +15,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 @RequiredArgsConstructor
 public class Controller {
 
-	private final WebClient webClient;
 	private final LogTraceConfigs logTraceConfigs;
 	@GetMapping("/hello")
 	public String hello(HttpServletRequest request) {

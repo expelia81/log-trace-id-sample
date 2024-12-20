@@ -9,15 +9,15 @@
         <Console name="Console" target="SYSTEM_OUT">
             <PatternLayout pattern="%d{yy-MM-dd HH:mm:ss.SSS} [%thread] [$${ctx:${TRACE_KEY}:-${NOT_FOUND}}] [user : $${ctx:${USER_ID_KEY}:-} / $${ctx:${USER_NAME_KEY}:- }] %-5level %logger{36} - %msg%n"/>
         </Console>
-        <RollingFile name="LogToFile" fileName="logs/first-api-server.log"
-                     filePattern="logs/first-api-server.log.%d{yyyy-MM-dd HH:mm:ss}">
+        <RollingFile name="LogToFile" fileName="logs/api-gateway.log"
+                     filePattern="logs/api-gateway.log.%d{yyyy-MM-dd HH:mm:ss}">
             <PatternLayout pattern="%d{yy-MM-dd HH:mm:ss.SSS} [%thread] [$${ctx:${TRACE_KEY}:-${NOT_FOUND}}] [user : $${ctx:${USER_ID_KEY}:-} / $${ctx:${USER_NAME_KEY}:- }] %-5level %logger{36} - %msg%n"/>
             <Policies>
                 <TimeBasedTriggeringPolicy interval="15" modulate="true" />
             </Policies>
             <DefaultRolloverStrategy max="10">
                 <Delete basePath="logs" maxDepth="1">
-                    <IfFileName glob="first-api-server.log.*"/>
+                    <IfFileName glob="api-gateway.log.*"/>
                     <IfAccumulatedFileCount exceeds="10"/>
                 </Delete>
             </DefaultRolloverStrategy>

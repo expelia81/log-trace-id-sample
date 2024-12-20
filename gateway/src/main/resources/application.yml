@@ -1,6 +1,8 @@
 spring:
   application:
-    name: gateway
+    name: gatewayf
+  profiles:
+    active: local
   cloud:
     gateway:
       default-filters:
@@ -21,3 +23,6 @@ spring:
 server:
   port: 12000
 
+
+logging:
+  config: classpath:log4j2/log4j2-${spring.profiles.active}.xml

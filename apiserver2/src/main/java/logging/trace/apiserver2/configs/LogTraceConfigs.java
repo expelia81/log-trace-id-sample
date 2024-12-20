@@ -14,6 +14,8 @@ import org.springframework.context.annotation.Configuration;
 public class LogTraceConfigs {
 
 	private String key = "X-TRACE-ID";
+	private String userId = "X-USER-ID";
+	private String userName = "X-USER-NAME";
 	private String defaultValue = "TRACE_ID_NOT_FOUND";
 	private String systemDefault = "SYSTEM";
 }

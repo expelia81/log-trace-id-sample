@@ -17,6 +17,9 @@ configurations {
 	compileOnly {
 		extendsFrom(configurations.annotationProcessor.get())
 	}
+	all {
+		exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging")
+	}
 }
 
 repositories {
@@ -27,6 +30,7 @@ extra["springCloudVersion"] = "2024.0.0"
 
 dependencies {
 	implementation("org.springframework.cloud:spring-cloud-starter-gateway")
+	implementation("org.springframework.boot:spring-boot-starter-log4j2")
 	compileOnly("org.projectlombok:lombok")
 	annotationProcessor("org.projectlombok:lombok")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")

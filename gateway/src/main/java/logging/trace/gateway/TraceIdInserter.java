@@ -3,6 +3,7 @@ package logging.trace.gateway;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.ThreadContext;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -30,15 +31,34 @@ public class TraceIdInserter extends AbstractGatewayFilterFactory<TraceIdInserte
 		public org.springframework.cloud.gateway.filter.GatewayFilter apply(Config config) {
 				return (exchange, chain) -> Mono.fromCallable(() -> UUID.randomUUID())
 								.flatMap(uuid -> {
-									log.info("key : " + config.getKey());
-									log.info("Generated trace id: {}", uuid);// exchange를 mutate()를 통해 수정
-									ServerWebExchange mutatedExchange = exchange.mutate()
-													.request(r -> r.header(config.getKey(), uuid.toString()))
-													.build();
-									return chain.filter(mutatedExchange)
-													.then(Mono.fromRunnable(() -> {
-														log.info("Clearing trace id: {}", uuid);
-													}));
-								});
+//									log.info("key : " + config.getKey());
+//									log.info("Generated trace id: {}", uuid);// exchange를 mutate()를 통해 수정
+									String userId = exchange.getRequest().getHeaders().getFirst("x-user-id");
+									if (userId == null) {
+										userId = "not-found";
+									}
+									String userName = exchange.getRequest().getHeaders().getFirst("x-user-name");
+									if (userName == null) {
+										userName = "unnamed";
+									}
+									ServerWebExchange mutated = exchange.mutate().request(exchange.getRequest().mutate()
+													.header(config.getKey(), uuid.toString())
+													.header("X-USER-ID", userId)
+													.header("x-user-name", userName)
+													.build()).build();
+									String path = exchange.getRequest().getPath().value();
+									return chain.filter(mutated)
+													.doOnSuccess(aVoid -> {
+														ThreadContext.put(config.getKey(), uuid.toString());
+														ThreadContext.put("X-USER-ID", mutated.getRequest().getHeaders().getFirst("X-USER-ID"));
+														ThreadContext.put("X-USER-NAME", mutated.getRequest().getHeaders().getFirst("X-user-name"));
+														log.info("Request path in context: {}", path);
+														ThreadContext.clearAll();
+													});
+								})
+
+
+
+								;
 		}
 }

@@ -10,6 +10,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.Optional;
 
 @Slf4j
 @Component
@@ -23,17 +24,13 @@ public class ContextFilter implements Filter {
 	public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
 		HttpServletRequest request = (HttpServletRequest) servletRequest;
 
-		String traceId = request.getHeader(logTraceConfigs.getKey());
+		String traceId = Optional.ofNullable(request.getHeader(logTraceConfigs.getKey())).orElse(logTraceConfigs.getDefaultValue());
+		String userId = Optional.ofNullable(request.getHeader(logTraceConfigs.getUserId())).orElse("");
+		String userName = Optional.ofNullable(request.getHeader(logTraceConfigs.getUserName())).orElse("");
 
-		request.getHeaderNames().asIterator().forEachRemaining(headerName -> {
-			log.info("headerName: {}, headerValue: {}", headerName, request.getHeader(headerName));
-		});
-
-		if (traceId != null && !traceId.isEmpty()) {
-			ThreadContext.put(logTraceConfigs.getKey(), traceId);
-		} else {
-			ThreadContext.put(logTraceConfigs.getKey(), logTraceConfigs.getDefaultValue());
-		}
+		ThreadContext.put(logTraceConfigs.getKey(), traceId);
+		ThreadContext.put(logTraceConfigs.getUserId(), userId);
+		ThreadContext.put(logTraceConfigs.getUserName(), userName);
 
 		filterChain.doFilter(servletRequest, servletResponse);
 

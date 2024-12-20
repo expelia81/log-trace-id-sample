@@ -1,17 +1,32 @@
 <Configuration>
     <Properties>
         <Property name="TRACE_KEY">${spring:logging.trace.key:-X-TRACE-ID}</Property>
-        <Property name="TRACE_KEY_NOT_FOUND">${spring:logging.trace.default-name:-SYSTEM}</Property>
+        <Property name="USER_ID_KEY">X-USER-ID</Property>
+        <Property name="USER_NAME_KEY">X-USER-NAME</Property>
+        <Property name="NOT_FOUND">${spring:logging.trace.default-name:-SYSTEM}</Property>
     </Properties>
     <Appenders>
         <Console name="Console" target="SYSTEM_OUT">
-<!--            <PatternLayout pattern="%d{yy-MM-dd HH:mm:ss.SSS} [%thread] [%X{traceId}] %-5level %logger{36} - %msg%n"/>-->
-            <PatternLayout pattern="%d{yy-MM-dd HH:mm:ss.SSS} [%thread] [$${ctx:${TRACE_KEY}:-${TRACE_KEY_NOT_FOUND}}] %-5level %logger{36} - %msg%n"/>
+            <PatternLayout pattern="%d{yy-MM-dd HH:mm:ss.SSS} [%thread] [$${ctx:${TRACE_KEY}:-${NOT_FOUND}}] [user : $${ctx:${USER_ID_KEY}:-} / $${ctx:${USER_NAME_KEY}:- }] %-5level %logger{36} - %msg%n"/>
         </Console>
+        <RollingFile name="LogToFile" fileName="logs/second-api-server.log"
+                     filePattern="logs/second-api-server.log.%d{yyyy-MM-dd HH:mm:ss}">
+            <PatternLayout pattern="%d{yy-MM-dd HH:mm:ss.SSS} [%thread] [$${ctx:${TRACE_KEY}:-${NOT_FOUND}}] [user : $${ctx:${USER_ID_KEY}:-} / $${ctx:${USER_NAME_KEY}:- }] %-5level %logger{36} - %msg%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="15" modulate="true" />
+            </Policies>
+            <DefaultRolloverStrategy max="10">
+                <Delete basePath="logs" maxDepth="1">
+                    <IfFileName glob="second-api-server.log.*"/>
+                    <IfAccumulatedFileCount exceeds="10"/>
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
     </Appenders>
     <Loggers>
         <Root level="info">
             <AppenderRef ref="Console"/>
+            <AppenderRef ref="LogToFile"/>
         </Root>
     </Loggers>
 </Configuration>
