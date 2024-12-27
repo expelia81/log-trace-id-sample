@@ -1,17 +1,57 @@
 <Configuration>
     <Properties>
-        <Property name="TRACE_KEY">${spring:logging.trace.key:-X-TRACE-ID}</Property>
-        <Property name="USER_ID_KEY">X-USER-ID</Property>
-        <Property name="USER_NAME_KEY">X-USER-NAME</Property>
-        <Property name="NOT_FOUND">${spring:logging.trace.default-name:-SYSTEM}</Property>
+        <!-- TRACE -->
+        <Property name="TRACE_KEY">X-TRACE-ID</Property>
+        <Property name="SPAN_KEY">X-SPAN-ID</Property>
+        <Property name="ORDER_KEY">X-ORDER</Property>
+        <Property name="NOT_FOUND">system</Property>
+        <!-- ACTOR - 행위자 정보입니다. -->
+        <Property name="ACTOR_TYPE_KEY">X-ACTOR-TYPE</Property>
+        <Property name="ACTOR_ID_KEY">X-ACTOR-ID</Property>
+        <Property name="ACTOR_NAME_KEY">X-ACTOR-NAME</Property>
+        <Property name="ACTOR_IP_KEY">X-ACTOR-IP</Property>
+        <!-- ACTION - 행위 정보입니다. -->
+        <Property name="ACTION_TYPE_KEY">X-ACTION-TYPE</Property>
+        <!-- TARGET - 대상 정보입니다. -->
+        <Property name="TARGET_TYPE_KEY">X-TARGET-TYPE</Property>
+        <Property name="TARGET_ID_KEY">X-TARGET-ID</Property>
+        <Property name="TARGET_NAME_KEY">X-TARGET-NAME</Property>
+        <!-- STATUS - 상태 정보입니다. -->
+        <Property name="STATUS_KEY">X-STATUS</Property>
+        <!-- 로그 패턴 -->
+        <Property name="AUDIT_LOG_PATTERN">%d{yy-MM-dd HH:mm:ss.SSS} [%.-5level] [$$${ctx:${TRACE_KEY}:-${NOT_FOUND}} / $$${ctx:${SPAN_KEY}:--} / $$${ctx:${ORDER_KEY}:--}] [$$${ctx:${ACTOR_TYPE_KEY}:--} / $$${ctx:${ACTOR_ID_KEY}:--} / $$${ctx:${ACTOR_NAME_KEY}:--} / $$${ctx:${ACTOR_IP_KEY}:--}] [$$${ctx:${ACTION_TYPE_KEY}:--}] [$$${ctx:${TARGET_TYPE_KEY}:--} / $$${ctx:${TARGET_ID_KEY}:--} / $$${ctx:${TARGET_NAME_KEY}:--}] [$$${ctx:${STATUS_KEY}:--}] [%thread] [%logger{36}] message : %msg%n</Property>
+        <Property name="SIMPLE_LOG_PATTERN">%d{yy-MM-dd HH:mm:ss.SSS} [%.-5level] [$$${ctx:${TRACE_KEY}:-${NOT_FOUND}} / $$${ctx:${SPAN_KEY}:--} / $$${ctx:${ORDER_KEY}:--}] [$$${ctx:${ACTOR_TYPE_KEY}:--} / $$${ctx:${ACTOR_ID_KEY}:--} / $$${ctx:${ACTOR_NAME_KEY}:--}] [%thread] [%logger{36}] message : %msg%n</Property>
+        <!-- 로그 파일 경로, 롤링 옵션들-->
+        <Property name="SIMPLE_LOG_FILE_PATH">${spring:logging.file.path}</Property>
+        <Property name="SIMPLE_LOG_FILE_PATTERN">${spring:logging.file.pattern}</Property>
+        <Property name="AUDIT_LOG_FILE_PATH">${spring:logging.audit.file.path}</Property>
+        <Property name="AUDIT_LOG_FILE_PATTERN">${spring:logging.audit.file.pattern}</Property>
+
+
     </Properties>
     <Appenders>
-        <Console name="Console" target="SYSTEM_OUT">
-            <PatternLayout pattern="%d{yy-MM-dd HH:mm:ss.SSS} [%thread] [$${ctx:${TRACE_KEY}:-${NOT_FOUND}}] [user : $${ctx:${USER_ID_KEY}:-} / $${ctx:${USER_NAME_KEY}:- }] %-5level %logger{36} - %msg%n"/>
+        <Console name="SimpleConsole" target="SYSTEM_OUT">
+            <PatternLayout pattern="${SIMPLE_LOG_PATTERN}"/>
         </Console>
-        <RollingFile name="LogToFile" fileName="logs/first-api-server.log"
-                     filePattern="logs/first-api-server.log.%d{yyyy-MM-dd HH:mm:ss}">
-            <PatternLayout pattern="%d{yy-MM-dd HH:mm:ss.SSS} [%thread] [$${ctx:${TRACE_KEY}:-${NOT_FOUND}}] [user : $${ctx:${USER_ID_KEY}:-} / $${ctx:${USER_NAME_KEY}:- }] %-5level %logger{36} - %msg%n"/>
+        <Console name="AuditConsole" target="SYSTEM_OUT">
+            <PatternLayout pattern="${AUDIT_LOG_PATTERN}"/>
+        </Console>
+        <RollingFile name="SimpleLogToFile" fileName="${SIMPLE_LOG_FILE_PATH}"
+                     filePattern="${SIMPLE_LOG_FILE_PATH}.%d{yyyy-MM-dd HH:mm:ss}">
+            <PatternLayout pattern="${SIMPLE_LOG_PATTERN}"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="15" modulate="true" />
+            </Policies>
+            <DefaultRolloverStrategy max="10">
+                <Delete basePath="logs" maxDepth="1">
+                    <IfFileName glob="first-api-server.log.*"/>
+                    <IfAccumulatedFileCount exceeds="10"/>
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
+        <RollingFile name="AuditLogToFile" fileName="${AUDIT_LOG_FILE_PATH}"
+                     filePattern="${AUDIT_LOG_FILE_PATH}.%d{yyyy-MM-dd HH:mm:ss}">
+            <PatternLayout pattern="${AUDIT_LOG_PATTERN}"/>
             <Policies>
                 <TimeBasedTriggeringPolicy interval="15" modulate="true" />
             </Policies>
@@ -24,9 +64,13 @@
         </RollingFile>
     </Appenders>
     <Loggers>
+        <Logger name="audit" level="info" additivity="false">
+            <AppenderRef ref="AuditConsole"/>
+            <AppenderRef ref="AuditLogToFile"/>
+        </Logger>
         <Root level="info">
-            <AppenderRef ref="Console"/>
-            <AppenderRef ref="LogToFile"/>
+            <AppenderRef ref="SimpleConsole"/>
+            <AppenderRef ref="SimpleLogToFile"/>
         </Root>
     </Loggers>
 </Configuration>

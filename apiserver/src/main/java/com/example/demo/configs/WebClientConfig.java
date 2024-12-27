@@ -16,23 +16,15 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Slf4j
 public class WebClientConfig {
 
-	private final LogTraceConfigs logTraceConfigs;
 
-	@PostConstruct
-	public void init() {
-		log.info("logTraceConfigs: {}", logTraceConfigs);
-	}
 	@Bean("internalWebClient")
 	@Primary
 	public WebClient webClient() {
 		return WebClient.builder()
 						.filter((request, next) -> {
-							log.info("output trace id : {} ", ThreadContext.get(logTraceConfigs.getKey()));
-							ClientRequest clientRequest = ClientRequest.from(request)
-											.header(logTraceConfigs.getKey(), ThreadContext.get(logTraceConfigs.getKey()))
-											.header(logTraceConfigs.getUserId(), ThreadContext.get(logTraceConfigs.getUserId()))
-											.header(logTraceConfigs.getUserName(), ThreadContext.get(logTraceConfigs.getUserName()))
-											.build();
+							log.info("output trace id : {} ", ThreadContext.get(LogTraceConfigs.trace));
+
+							ClientRequest clientRequest = LogTraceConfigs.createClientRequest(request);
 							return next.exchange(clientRequest);
 						})
 //						.apply(builder -> {

@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @Component
@@ -19,19 +20,26 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ContextFilter implements Filter {
 
-	private final LogTraceConfigs logTraceConfigs;
 
 	@Override
 	public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
 		HttpServletRequest request = (HttpServletRequest) servletRequest;
 
-		String traceId = Optional.ofNullable(request.getHeader(logTraceConfigs.getKey())).orElse(logTraceConfigs.getDefaultValue());
-		String userId = Optional.ofNullable(request.getHeader(logTraceConfigs.getUserId())).orElse("");
-		String userName = Optional.ofNullable(request.getHeader(logTraceConfigs.getUserName())).orElse("");
+		String actorType = Optional.ofNullable(request.getHeader(LogTraceConfigs.actorType)).orElse("user");
+		String actorId = Optional.ofNullable(request.getHeader(LogTraceConfigs.actorId)).orElse("");
+		String actorName = Optional.ofNullable(request.getHeader(LogTraceConfigs.actorName)).orElse("");
+		String actorIp = Optional.ofNullable(request.getHeader(LogTraceConfigs.actorIp)).orElse(request.getRemoteAddr());
+		String traceId = Optional.ofNullable(request.getHeader(LogTraceConfigs.trace)).orElse(LogTraceConfigs.traceDefault);
+		int order = Integer.parseInt(Optional.ofNullable(request.getHeader(LogTraceConfigs.order)).orElse("0"))+1;
+//		String span = Optional.ofNullable(request.getHeader(LogTraceConfigs.getSpan())).orElse("");
+		ThreadContext.put(LogTraceConfigs.trace, traceId);
+		ThreadContext.put(LogTraceConfigs.order, String.valueOf(order));
+		ThreadContext.put(LogTraceConfigs.span, UUID.randomUUID().toString().replace("-", ""));
+		ThreadContext.put(LogTraceConfigs.actorType, actorType);
+		ThreadContext.put(LogTraceConfigs.actorId, actorId);
+		ThreadContext.put(LogTraceConfigs.actorName, actorName);
+		ThreadContext.put(LogTraceConfigs.actorIp, actorIp);
 
-		ThreadContext.put(logTraceConfigs.getKey(), traceId);
-		ThreadContext.put(logTraceConfigs.getUserId(), userId);
-		ThreadContext.put(logTraceConfigs.getUserName(), userName);
 
 		filterChain.doFilter(servletRequest, servletResponse);
 

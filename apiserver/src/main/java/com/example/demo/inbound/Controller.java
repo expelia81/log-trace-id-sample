@@ -1,6 +1,6 @@
 package com.example.demo.inbound;
 
-import com.example.demo.configs.LogTraceConfigs;
+import com.example.demo.configs.Audit;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +24,6 @@ public class Controller {
 	@Qualifier("externalWebClient")
 	@Autowired
 	private WebClient externalWebClient;
-	private final LogTraceConfigs logTraceConfigs;
 
 	@PostConstruct
 	public void init() {
@@ -33,7 +32,10 @@ public class Controller {
 	}
 	@GetMapping("/hello")
 	public ResponseEntity<String> hello() {
-		log.info("Hello, World!");
+
+		Audit.info(Audit.Target.from("VM", "dy.choi-123-341sad-1231sdas1", "최두영-VM"), Audit.Action.from("hello world"), Audit.Status.from("running"), "first api server hello world api called!");
+
+		log.info("첫 번째 서버 API 테스트 중입니다.");
 		return internalWebClient.get()
 						.uri("http://localhost:12002/hello")
 //						.header(logTraceConfigs.getKey(), ThreadContext.get(logTraceConfigs.getKey()))

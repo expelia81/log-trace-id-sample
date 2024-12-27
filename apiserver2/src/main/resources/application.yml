@@ -7,6 +7,15 @@ server:
   port: 12002
 logging:
   config: classpath:log4j2/log4j2-${spring.profiles.active}.xml
+  file:
+    name: second-api-server.log
+    path: logs/${logging.file.name}
+    pattern: .%d{yyyy-MM-dd HH:mm:ss}
+  audit:
+    file:
+      name: second-api-server-audit.log
+      path: logs/${logging.audit.file.name}
+      pattern: .%d{yyyy-MM-dd HH:mm:ss}
 #  trace:
 #    key: x-trace-id
 #    default-name: LOG_TRACE_ID_NOT_FOUND
